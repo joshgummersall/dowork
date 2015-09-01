@@ -1,7 +1,7 @@
 {
   "name": "dowork",
-  "version": "0.0.1",
-  "description": "An opinionated NSQ-based framework for data processing in Node.js.",
+  "version": "0.0.2",
+  "description": "An NSQJS framework for data processing in Node.js.",
   "main": "lib/app.coffee",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
