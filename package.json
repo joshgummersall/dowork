@@ -13,5 +13,8 @@
     "pipeline"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "nsqjs": "^0.7.6"
+  }
 }
