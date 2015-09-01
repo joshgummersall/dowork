@@ -1,6 +1,7 @@
 _ = require 'underscore'
 async = require 'async'
 joi = require 'joi'
+request = require 'request'
 {Reader} = require 'nsqjs'
 
 # Contains pipeline-specific logic, including set of workers to start up
@@ -25,9 +26,10 @@ module.exports = class Pipeline
       (callback) =>
         @validate topic, message, callback
 
-      (callback) ->
-        # TODO(Josh): Implement
-        callback()
+      (callback) =>
+        request.post "http://#{@config.nsqdHTTPAddress}/put?topic=#{topic}",
+          json: message
+          callback
 
     ], callback
 

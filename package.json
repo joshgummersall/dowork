@@ -19,6 +19,7 @@
     "coffee-script": "^1.9.3",
     "joi": "^6.6.1",
     "nsqjs": "^0.7.6",
+    "request": "^2.61.0",
     "underscore": "^1.8.3"
   }
 }

@@ -6,6 +6,8 @@ module.exports = class Worker
 
   handleMessage: (topic, channel, message) ->
     @performJob topic, channel, message, (err) ->
-      return message.requeue 10, false if err
+      if err
+        console.error err
+        return message.requeue 10, false
 
       message.finish()
