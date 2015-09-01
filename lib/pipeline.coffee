@@ -3,26 +3,27 @@ async = require 'async'
 joi = require 'joi'
 {Reader} = require 'nsqjs'
 
-# Contains app-specific logic, including set of workers to start up
+# Contains pipeline-specific logic, including set of workers to start up
 # and a schema for topics.
-module.exports = class App
+module.exports = class Pipeline
   constructor: (@topics = {}, @workers = [], @config = {}) ->
     process.on 'SIGINT', ->
       process.exit()
 
-  validateMessage: (topic, messageJson, callback) ->
+  validate: (topic, message, callback) ->
     schema = @topics[topic]
     return callback new Error "No schema for #{topic}!" unless schema
 
-    joi.validate messageJson, schema,
+    json = if _.isFunction message.json then message.json() else message
+    joi.validate json, schema,
       allowUnknown: true
       stripUnknown: true
       callback
 
-  publishMessage: (topic, message, callback) ->
+  publish: (topic, message, callback) ->
     async.series [
       (callback) =>
-        @validateMessage topic, message, callback
+        @validate topic, message, callback
 
       (callback) ->
         # TODO(Josh): Implement
@@ -42,7 +43,7 @@ module.exports = class App
 
         # Include validation prior to message processing.
         reader.on 'message', (message) =>
-          @validateMessage topic, message.json(), (err) ->
+          @validate topic, message, (err) ->
             if err
               console.error err
               return message.finish()
