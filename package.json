@@ -1,0 +1,17 @@
+{
+  "name": "dowork",
+  "version": "0.0.1",
+  "description": "An opinionated NSQ-based framework for data processing in Node.js.",
+  "main": "bin/startup",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nsq",
+    "nsqjs",
+    "data",
+    "pipeline"
+  ],
+  "author": "",
+  "license": "ISC"
+}
