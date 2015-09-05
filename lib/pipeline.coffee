@@ -45,7 +45,7 @@ module.exports = class Pipeline
         # Allows workers to override global config with topic-specific values.
         config = _.extend {}, @config, config
         reader = new Reader topic, channel, config
-        worker = new Worker topic, channel, reader, config
+        worker = new Worker topic, channel, this, reader, config
 
         # Include validation prior to message processing.
         reader.on Reader.MESSAGE, (message) =>

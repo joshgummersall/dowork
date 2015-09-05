@@ -6,7 +6,7 @@ describe 'Worker', ->
   beforeEach ->
     @sandbox = sinon.sandbox.create()
 
-    @worker = new Worker 'topic', 'channel', {}, {}
+    @worker = new Worker 'topic', 'channel', {}, {}, {}
 
   afterEach ->
     @sandbox.restore()
