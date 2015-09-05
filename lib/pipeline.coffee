@@ -2,14 +2,15 @@ _ = require 'underscore'
 async = require 'async'
 joi = require 'joi'
 request = require 'request'
+winston = require 'winston'
 {Reader} = require 'nsqjs'
 
 # Contains pipeline-specific logic, including set of workers to start up
 # and a schema for topics.
 module.exports = class Pipeline
   constructor: (@topics = {}, @workers = [], @config = {}) ->
-    process.on 'SIGINT', ->
-      process.exit()
+    @config = _.defaults @config,
+      backoff: 10
 
   validate: (topic, message, callback) ->
     schema = @topics[topic]
@@ -27,6 +28,7 @@ module.exports = class Pipeline
         @validate topic, message, callback
 
       (callback) =>
+        # TODO(Josh): use Writer to publish instead of HTTP request.
         request.post "http://#{@config.nsqdHTTPAddress}/put?topic=#{topic}",
           json: message
           callback
@@ -40,17 +42,21 @@ module.exports = class Pipeline
       async.eachSeries Worker.topics, ({topic, channel, config}, callback) =>
         channel or= 'default'
 
-        worker = new Worker topic, channel
-        reader = new Reader topic, channel, _.extend {}, @config, config
+        # Allows workers to override global config with topic-specific values.
+        config = _.extend {}, @config, config
+        reader = new Reader topic, channel, config
+        worker = new Worker topic, channel, reader, config
 
         # Include validation prior to message processing.
-        reader.on 'message', (message) =>
+        reader.on Reader.MESSAGE, (message) =>
           @validate topic, message, (err) ->
+            # Do not requeue invalid messages. Log the error and move on.
             if err
-              console.error err
+              winston.log 'error', err
               return message.finish()
 
-            worker.handleMessage topic, channel, message
+            # Note: worker is responsible for finishing or requeuing message.
+            worker.handleMessage message
 
         reader.connect()
         callback()
