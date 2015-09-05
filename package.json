@@ -4,7 +4,8 @@
   "description": "An NSQJS framework for data processing in Node.js.",
   "main": "lib/app.coffee",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "node_modules/.bin/coffee -o src/ -c lib/*",
+    "test": "node_modules/.bin/mocha -r coffee-script/register test/*_test.coffee"
   },
   "keywords": [
     "nsq",
@@ -16,10 +17,14 @@
   "license": "ISC",
   "dependencies": {
     "async": "^1.4.2",
-    "coffee-script": "^1.9.3",
     "joi": "^6.6.1",
     "nsqjs": "^0.7.6",
     "request": "^2.61.0",
     "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.10.0",
+    "mocha": "^2.3.0",
+    "should": "^7.1.0"
   }
 }
