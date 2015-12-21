@@ -16,7 +16,7 @@
     "pipeline"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "async": "^1.4.2",
     "joi": "^6.6.1",
