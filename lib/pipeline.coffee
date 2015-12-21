@@ -16,7 +16,7 @@ module.exports = class Pipeline
     # Fill in default config options
     @config = _.defaults @config,
       reader:
-        lookupdHTTPAddresses: '127.0.0.1:4161'
+        nsqdTCPAddresses: '127.0.0.1:4150'
         backoff: 10
       writer:
         nsqd:
