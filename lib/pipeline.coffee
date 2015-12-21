@@ -36,8 +36,7 @@ module.exports = class Pipeline
 
     json = message.json?() or message
     joi.validate json, schema,
-      allowUnknown: true
-      stripUnknown: true
+      allowUnknown: false
       callback
 
   publish: (topic, message, callback) ->

@@ -1,23 +1,25 @@
 Pipeline = require '../lib/pipeline'
-Worker = require '../lib/worker'
+joi = require 'joi'
 should = require 'should'
-sinon = require 'sinon'
 
 describe 'Pipeline', ->
-  beforeEach ->
-    @sandbox = sinon.sandbox.create()
-
-  afterEach ->
-    @sandbox.restore()
-
   describe '.validate', ->
-    it 'validates a well formed message'
-    it 'does not validate a poorly formed message'
+    beforeEach ->
+      topics =
+        topic: joi.object().keys
+          bar: joi.string().required()
 
-  describe '.publish', ->
-    it 'publishes a well formatted message'
-    it 'yields an error for an invalid message'
+      @pipeline = new Pipeline topics, [], {}
 
-  describe '.start', ->
-    it 'throws if there are no workers'
-    it 'starts up workers and connects'
+    it 'validates a well formed message', (done) ->
+      @pipeline.validate 'topic', bar: 'should validate', done
+
+    it 'does not validate a poorly formed message', (done) ->
+      @pipeline.validate 'topic', bar: 2, (err) ->
+        should.exist err
+        done()
+
+    it 'does not validate a message with extra keys', (done) ->
+      @pipeline.validate 'topic', foo: 1, bar: 'str', (err) ->
+        should.exist err
+        done()
