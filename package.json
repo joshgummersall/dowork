@@ -1,12 +1,13 @@
 {
   "name": "dowork",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "An NSQJS framework for data processing in Node.js.",
-  "main": "lib/app.coffee",
+  "main": "src/index.js",
   "scripts": {
     "compile": "node_modules/.bin/coffee -o src/ -c lib/*",
     "lint": "node_modules/.bin/coffeelint **/*.coffee **/**/*.coffee",
-    "test": "node_modules/.bin/mocha -r coffee-script/register test/*_test.coffee"
+    "test": "node_modules/.bin/mocha -r coffee-script/register test/*_test.coffee",
+    "prepublish": "npm run compile"
   },
   "keywords": [
     "nsq",
