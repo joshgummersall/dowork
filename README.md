@@ -1,8 +1,8 @@
 dowork
 ======
 
-An [NSQJS](https://github.com/dudleycarr/nsqjs) framework for data processing
-in Node.js.
+An [NSQJS](https://github.com/dudleycarr/nsqjs) based framework for data
+processing pipelines using Node.js.
 
 ### Introduction
 
@@ -18,107 +18,31 @@ a single component of a pipeline that listens on a set of topics and channels,
 reponding to messages published to those topics. A pipeline is a collection
 of related workers designed to accomplish some task.
 
-### Quick Example
+### Worker
 
-The following example defines a pipeline that would be used to fetch a large
-number of resources (either XML or JSON), parse them into Javascript objects,
-and then write those objects to files.
+A worker is a single componenet of a pipeline. In terms of NSQ primitives, a
+single worker subscribes to a topic and channel (optionally, multiple topic and
+channel pairs). Each worker then accepts NSQ messages, does some unit of work
+related to those messages, and either halts the pipeline or publishes any number
+of messages to continue processing.
 
-```coffeescript
-request = require 'request'
-{
-  Pipeline
-  Worker
-} = require 'dowork'
+To create a worker you need to inherit from the Worker base class, specifying a
+set of topics to subscribe to and overriding the `handleMessage` function to
+do some work when receiving messages. Each worker receives a reference to the
+topic and channel it is subscribed to as well as a reference to the pipeline it
+is a member of, the reader that is delegating it messages, and the configuration
+used to construct it.
 
-class ResourceFetcher extends Worker
-  @topics: [
-    topic: 'resource'
-    channel: 'fetch'
-  ]
+See the [examples]() directory for some sample code.
 
-  performJob: (message, done) ->
-    {url} = message.json()
+### Pipeline
 
-    request.get url, (err, resp, body) =>
-      return done err if err
+A pipeline is comprised of three things. The first is a schema object that maps
+a set of topic names to a [joi]() schema defining the shape of the messages that
+will be published to that topic. The second is a list of worker classes that
+make up the pipeline. The third is a configuration object that allows to you
+specify some NSQJS-style configuration around readers and writers. The default
+configuration should suffice for deployment locally, but you will want to tinker
+with this if deploying to a production environment.
 
-      switch resp.headers['content-type']
-        when 'application/xml'
-          nextTopic = 'xml_resource'
-        when 'application/json'
-          nextTopic = 'json_resource'
-        else
-          return done()
-
-      @pipeline.publish nextTopic, {body}, done
-
-class JsonParser extends Worker
-  @topics: [
-    topics: 'json_resource'
-    channel: 'parse'
-  ]
-
-  performJob: (message, done) ->
-    {body} = message.json()
-    parsed = JSON.parse body
-    @pipeline.publish 'parsed_resource', {parsed}, done
-
-class XmlParser extends Worker
-  @topics: [
-    topics: 'xml_resource'
-    channel: 'parse'
-  ]
-
-  performJob: (message, done) ->
-    {body} = message.json()
-    xml2js.parseString body, (err, parsedXml) =>
-      return done err if err
-
-      @pipeline.publish 'parsed_resource', {parsed}, done
-
-class FileWriter extends Worker
-  @topics: [
-    topic: 'parsed_resource'
-    channel: 'write'
-  ]
-
-  performJob: (message, done) ->
-    {parsed} = message.json()
-    fs.writeFile 'SOME_RANDOM_FILE.json', JSON.stringify(parsed, null, 2),
-      done
-
-schemas =
-  resource:
-    url: joi.string().required()
-
-  json_resource: joi.object().keys
-    body: joi.string().required()
-
-  xml_resource: joi.object().keys
-    body: joi.string().required()
-
-  parsed_resource: joi.object().keys
-    parsed: joi.object()
-
-pipeline = new Pipeline schemas, [
-  ResourceFetcher
-  XmlParser
-  JsonParser
-  FileWriter
-]
-
-pipeline.start (err) ->
-  throw err if err
-
-  console.log 'Pipeline has started...'
-
-async.eachSeries [
-  'http://somejsonresource.com/entity_id'
-  'http://anotherjsonresource.com/entity_id'
-  'http://somexmlresource.com/entity_id'
-], (url, callback) ->
-  pipeline.publish 'resource', {url}, callback
-, (err) ->
-  throw err if err
-```
+See the [examples]() directory for some sample code.

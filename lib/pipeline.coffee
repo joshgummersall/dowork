@@ -15,6 +15,10 @@ module.exports = class Pipeline
   constructor: (@topics = {}, @workers = [], @config = {}) ->
     # Fill in default config options
     @config = _.defaults @config,
+      winston:
+        level: 'debug'
+        console: true
+        loggers: []
       reader:
         nsqdTCPAddresses: '127.0.0.1:4150'
         backoff: 10
@@ -22,6 +26,12 @@ module.exports = class Pipeline
         nsqd:
           host: '127.0.0.1'
           port: 4150
+
+    # Set up Winston properly, including log level, extra loggers, and console
+    # logging (specified via `winston` config options).
+    winston.level = @config.winston.level
+    winston.add logger, options for {logger, options} in @config.winston.loggers
+    winston.remove winston.transports.Console unless @config.winston.console
 
     # Create a writer instance to use for publishing
     {host, port} = @config.writer.nsqd
