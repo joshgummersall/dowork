@@ -34,7 +34,7 @@ is a member of, the reader that is delegating it messages, and the configuration
 used to construct it.
 
 See the
-[examples](https://github.com/joshgummersall/dowork/blob/master/examples)
+[examples](https://gitlab.com/joshgummersall/dowork/blob/master/examples)
 directory for some sample code.
 
 ### Pipeline
@@ -48,5 +48,5 @@ configuration should suffice for deployment locally, but you will want to tinker
 with this if deploying to a production environment.
 
 See the
-[examples](https://github.com/joshgummersall/dowork/blob/master/examples)
+[examples](https://gitlab.com/joshgummersall/dowork/blob/master/examples)
 directory for some sample code.
