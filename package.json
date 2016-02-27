@@ -1,6 +1,6 @@
 {
   "name": "dowork",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "An NSQJS framework for data processing in Node.js.",
   "main": "src/index.js",
   "scripts": {
@@ -15,7 +15,20 @@
     "data",
     "pipeline"
   ],
-  "author": "",
+  "homepage": "https://gitlab.com/joshgummersall/dowork",
+  "bugs": {
+    "url": "https://gitlab.com/joshgummersall/dowork/issues",
+    "email": "josh@joshgummersall.me"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/joshgummersall/dowork.git"
+  },
+  "author": {
+    "name": "Josh Gummersall",
+    "email": "josh@joshgummersall.me",
+    "url": "http://joshgummersall.me"
+  },
   "license": "MIT",
   "dependencies": {
     "async": "^1.4.2",
