@@ -1,15 +1,14 @@
-const _ = require('underscore');
-const async = require('async');
-const joi = require('joi');
-const request = require('request');
-const winston = require('winston');
-const {Writer, Reader} = require('nsqjs');
+import _ from 'underscore';
+import async from 'async';
+import joi from 'joi';
+import winston from 'winston';
+import {Writer, Reader} from 'nsqjs';
 
 /*
 Contains pipeline-specific logic, including set of workers to start up
 and a schema for topics.
 */
-module.exports = class Pipeline {
+export default class Pipeline {
   constructor(topics = {}, workers = [], config = {}) {
     this.topics = topics;
     this.workers = workers;

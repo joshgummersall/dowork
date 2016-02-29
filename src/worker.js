@@ -4,7 +4,7 @@ A fairly simple Worker base class to extend from. Extend and override the
 topic and channel it is registered on as well as the pipeline it is a member of,
 the reader that is delegating it messages, and something configuration.
 */
-module.exports = class Worker {
+export default class Worker {
   // Should be overridden to return topic configuration
   static topics() {
     return [];

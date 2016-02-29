@@ -1,6 +1,6 @@
-const Pipeline = require('../src/pipeline');
-const joi = require('joi');
-const should = require('should');
+import Pipeline from '../src/pipeline';
+import joi from 'joi';
+import should from 'should';
 
 let pipeline;
 

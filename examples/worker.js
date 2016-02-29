@@ -1,8 +1,8 @@
-const {Worker} = require('dowork');
-const fs = require('fs');
-const request = require('request');
+import fs from 'fs';
+import request from 'request';
+import {Worker} from 'dowork';
 
-exports.Searcher = class Searcher extends Worker {
+class Searcher extends Worker {
   static topics() {
     return [{
       topic: 'search'
@@ -25,7 +25,7 @@ exports.Searcher = class Searcher extends Worker {
   }
 }
 
-exports.Storer = class Storer extends Worker {
+class Storer extends Worker {
   static topics() {
     return [{
       topic: 'response'
@@ -38,3 +38,5 @@ exports.Storer = class Storer extends Worker {
     fs.writeFile(url, response, callback);
   }
 }
+
+export {Searcher, Storer};

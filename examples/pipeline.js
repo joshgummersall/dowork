@@ -1,6 +1,6 @@
-const {Pipeline} = require('dowork');
-const {Searcher, Storer} = require('./worker');
-const joi = require('joi');
+import joi from 'joi';
+import {Pipeline} from 'dowork';
+import {Searcher, Storer} from './worker';
 
 // Quick schema describing the topics we support
 const topics = {
