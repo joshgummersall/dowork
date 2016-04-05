@@ -15,6 +15,10 @@ export default class Pipeline {
 
     // Fill in default config options
     this.config = _.defaults(config, {
+      joi: {
+        allowUnknown: true,
+        stripUnknown: true
+      },
       winston: {
         level: 'debug',
         console: true,
@@ -22,7 +26,8 @@ export default class Pipeline {
       },
       reader: {
         nsqdTCPAddresses: '127.0.0.1:4150',
-        backoff: 10
+        backoff: false,
+        requeueDelay: 60
       },
       writer: {
         nsqd: {
@@ -41,10 +46,6 @@ export default class Pipeline {
     if (!this.config.winston.console) {
       winston.remove(winston.transports.Console);
     }
-
-    // Create a writer instance to use for publishing
-    const {host, port} = this.config.writer.nsqd;
-    this.writer = new Writer(host, port, this.config.writer);
   }
 
   log(level, ...args){
@@ -58,29 +59,38 @@ export default class Pipeline {
     }
 
     const json = typeof message.json === 'function' ? message.json() : message;
-    joi.validate(json, schema, {allowUnknown: false}, callback);
+    joi.validate(json, schema, this.config.joi, callback);
+  }
+
+  createWriter() {
+    const {host, port} = this.config.writer.nsqd;
+    return new Writer(host, port, this.config.writer);
   }
 
   publish(topic, message, callback) {
+    const writer = this.createWriter();
+
     // Wrapped in once for safety, closes writer and forwards args to callback
-    const done = _.once(...args => {
-      this.writer.close();
-      callback(...args);
+    const done = _.once((err, ...args) => {
+      if (err) {
+        this.log('error', 'publish error', err);
+      }
+      writer.close();
+      callback(err, ...args);
     });
 
-    this.writer.once(Writer.READY, () => {
-      async.series([
+    writer.once(Writer.READY, () => {
+      async.waterfall([
         callback => {
           this.validate(topic, message, callback);
         },
-        callback => {
-          this.writer.publish(topic, message, callback);
+        (validated, callback) => {
+          writer.publish(topic, validated, callback);
         }
       ], done);
     });
-
-    this.writer.once(Writer.ERROR, done);
-    this.writer.connect();
+    writer.once(Writer.ERROR, done);
+    writer.connect();
   }
 
   start(callback) {
@@ -97,11 +107,11 @@ export default class Pipeline {
         const config = _.extend({}, this.config.reader, options.config);
 
         // Construct reader and worker for message processing.
-        reader = new Reader(topic, channel, config);
-        worker = new Worker(topic, channel, this, reader, config);
+        const reader = new Reader(topic, channel, config);
+        const worker = new Worker(topic, channel, this, reader, config);
 
         const messageHandler = (handlerFn) => {
-          (message) => {
+          return (message) => {
             this.validate(topic, message, (err) => {
               // Do not requeue invalid messages. Log the error and move on.
               if (err) {
@@ -115,7 +125,7 @@ export default class Pipeline {
         };
 
         const simpleHandler = (handlerFn) => {
-          (...args) => {
+          return (...args) => {
             worker[handlerFn](...args);
           }
         };

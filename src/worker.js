@@ -23,7 +23,14 @@ export default class Worker {
   }
 
   onMessage(message) {
-    this.handleMessage(message, (...args) => {});
+    this.handleMessage(message, err => {
+      if (err) {
+        this.pipeline.log('error', 'handleMessage error', err);
+        message.requeue(this.config.requeueDelay, this.config.backoff || false);
+      } else {
+        message.finish();
+      }
+    });
   }
 
   handleDiscard(message, callback) {
@@ -31,7 +38,13 @@ export default class Worker {
   }
 
   onDiscard(message) {
-    this.handleDiscard(message, (...args) => {});
+    this.handleDiscard(message, err => {
+      if (err) {
+        this.pipeline.log('error', 'handleDiscard error', err);
+      } else {
+        message.finish();
+      }
+    });
   }
 
   handleError(err, callback) {
