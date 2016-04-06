@@ -3,28 +3,22 @@ import async from 'async';
 import {Worker} from '../../src/index';
 
 export default class FanOutProducer extends Worker {
-  static topics() {
-    return [{
-      topic: 'fan_out'
-    }];
+  taskConfig(message) {
+    return {};
   }
 
-  handleMessage(message, done) {
-    const task = new Task({eCount: 10});
-
-    task.initialize(err => {
+  onMessage(message) {
+    const tast = new Task(this.taskConfig(message));
+    async.series([
+      callback => task.initialize(callback),
+      callback => this.handleMessage(message, task, callback)
+    ], err => {
       if (err) {
-        return done(err);
+        this.pipeline.log('error', 'worker error', err);
+        message.requeue(this.config.requeueDelay, this.config.backoff || false);
+      } else {
+        message.finish();
       }
-
-      async.timesSeries(task.eCount, (n, callback) => {
-        this.pipeline.log('debug', 'Publishing fan out message', n);
-        this.pipeline.publish('fanned_out', {
-          tKey: task.tKey,
-          eCount: task.eCount,
-          n
-        }, callback);
-      }, done);
     });
   }
 }
