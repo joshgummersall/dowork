@@ -3,39 +3,68 @@ import async from 'async';
 import {Worker} from '../../src/index';
 
 export default class FanInConsumer extends Worker {
-  static topics() {
-    return [{
-      topic: 'fanned_in'
-    }];
+  taskConfig(message) {
+    return message.json();
   }
 
-  handleMessage(message, done) {
-    const task = new Task(message.json());
-    async.waterfall([
-      callback => task.isValid(callback),
-      (isValid, callback) => {
-        if (!isValid) {
-          // TODO(JOSH): fix to include handling timeouts
-          this.pipeline.log('debug', 'task invalid');
-          callback(null, false);
-        } else {
-          task.isComplete(callback);
-        }
+  onMessage(message) {
+    const task = new Task(this.taskConfig(message));
+    async.auto({
+      isValid: callback => {
+        task.isValid(callback);
       },
-      (isComplete, callback) => {
-        if (!isComplete) {
-          // TODO(JOSH): fix to poll
-          this.pipeline.log('debug', 'task incomplete');
-          callback(null, []);
-          // Handle incomplete state
-        } else {
-          task.fetchMessages(callback);
-        }
+      isComplete: callback => {
+        task.isComplete(callback);
       },
-      (messages, callback) => {
-        this.pipeline.log('debug', 'Fanned in messages', messages);
-        callback();
+      handle: ['isValid', 'isComplete', (callback, {isValid, isComplete}) => {
+        if (isValid && !isComplete) {
+          this.handleValidIncomplete(message, task, callback);
+        } else if (!isValid && isComplete) {
+          this.handleInvalidComplete(message, task, callback);
+        } else if (!isValid && !isComplete) {
+          this.handleInvalidIncomplete(message, task, callback);
+        } else {
+          task.fetchMessages((err, messages) => {
+            if (err) {
+              callback(err);
+            } else {
+              this.handleMessage(message, task, messages, callback);
+            }
+          });
+        }
+      }]
+    }, err => {
+      if (err) {
+        this.pipeline.log('error', 'worker error', err);
+        message.requeue(this.config.requeueDelay, this.config.backoff || false);
+      } else {
+        message.finish();
       }
-    ], done);
+    });
+  }
+
+  handleValidIncomplete(message, task, done) {
+    const toPublish = message.json();
+    toPublish.attempts++;
+
+    if (toPublish.attempts > task.maxPollCount) {
+      done(new Error(`Task ${task.tKey} max poll count reached`));
+    } else {
+      setTimeout(() => {
+        this.pipeline.publish(this.topic, toPublish, callback);
+      }, task.pollDelay * 1000);
+    }
+  }
+
+  handleInvalidComplete(message, task, done) {
+    done();
+  }
+
+  handleInvalidIncomplete(message, task, done) {
+    done();
+  }
+
+  handleMessage(message, task, messages, done) {
+    done();
   }
 }

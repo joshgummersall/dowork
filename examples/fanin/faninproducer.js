@@ -3,38 +3,43 @@ import async from 'async';
 import {Worker} from '../../src/index';
 
 export default class FanInProducer extends Worker {
-  static topics() {
-    return [{
-      topic: 'fanned_out'
-    }];
+  taskConfig(message) {
+    return message.json();
   }
 
-  handleMessage(message, done) {
-    this.pipeline.log('debug', 'Starting message', message.json());
-    const {n} = message.json();
-    const task = new Task(message.json());
-    task.isValid((err, isValid) => {
-      this.pipeline.log('debug', 'task.isValid', err, isValid);
-
+  onMessage(message) {
+    const task = new Task(this.taskConfig(message));
+    async.waterfall([
+      callback => task.isValid(callback),
+      (isValid, callback) => {
+        if (isValid) {
+          this.handleMessage(message, task, callback);
+        } else {
+          callback(new Error(`Task ${task.tKey} is invalid`));
+        }
+      }
+    ], err => {
       if (err) {
-        done(err);
-      } else if (!isValid) {
-        done(new Error(`Task ${task.tKey} expired`));
+        this.pipeline.log('error', 'worker error', err);
+        message.requeue(this.config.requeueDelay, this.config.backoff || false);
       } else {
-        this.finishMessage(task, message, {n}, done);
+        message.finish();
       }
     });
   }
 
-  finishMessage(task, message, dataToAdd, done) {
-    this.pipeline.log('debug', 'Adding task message',
-        message.json(), dataToAdd);
-    task.addMessage(message, dataToAdd, (err) => {
-      if (err) {
-        done(err);
-      } else {
-        this.pipeline.publish('fanned_in', message, done);
-      }
-    });
+  finishMessage(message, task, topic, dataToAdd, done) {
+    if (topic && dataToAdd) {
+      task.addMessage(message, dataToAdd, (err) => {
+        if (err) {
+          done(err);
+        } else {
+          this.pipeline.publish(topic, message, done);
+        }
+      });
+    } else {
+      done();
+    }
   }
 }
+

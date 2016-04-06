@@ -8,6 +8,7 @@ class Task {
     this.tKey = options.tKey || uuid.v1();
     this.eCount = options.eCount;
     this.pollDelay = options.pollDelay || 60;
+    this.maxPollCount = options.maxPollCount || 20;
     this.redis = redis.createClient();
   }
 
