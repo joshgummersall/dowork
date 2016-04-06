@@ -1,6 +1,6 @@
 import Task from './task'
+import Worker from '../worker';
 import async from 'async';
-import {Worker} from '../../src/index';
 
 export default class FanInProducer extends Worker {
   taskConfig(message) {

@@ -1,8 +1,6 @@
-import FanInConsumer from './faninconsumer'
-import FanInProducer from './faninproducer'
-import FanOutProducer from './fanoutproducer'
 import joi from 'joi';
-import {Pipeline} from '../../src/index'
+import {FanInProducer, FanInConsumer, FanOutProducer} from '../../src/fanning';
+import {Pipeline} from '../src/index';
 
 class First extends FanOutProducer {
   static topics() {
