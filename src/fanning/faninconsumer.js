@@ -51,9 +51,16 @@ export default class FanInConsumer extends Worker {
       done(new Error(`Task ${task.tKey} max poll count reached`));
     } else {
       setTimeout(() => {
-        this.pipeline.publish(this.topic, toPublish, callback);
+        this.pipeline.publish(this.topic, toPublish, err => {
+          if (err) {
+            this.pipeline.log('error', 'error polling for task', err);
+          }
+        });
       }, task.computeDelayMs());
     }
+
+    // Invoke done immediately to finish the message and continue processing.
+    done();
   }
 
   handleInvalidComplete(message, task, done) {

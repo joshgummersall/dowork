@@ -8,7 +8,7 @@ export default class FanOutProducer extends Worker {
   }
 
   onMessage(message) {
-    const tast = new Task(this.taskConfig(message));
+    const task = new Task(this.taskConfig(message));
     async.series([
       callback => task.initialize(callback),
       callback => this.handleMessage(message, task, callback)

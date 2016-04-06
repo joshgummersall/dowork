@@ -1,5 +1,6 @@
+import async from 'async';
 import joi from 'joi';
-import {FanInProducer, FanInConsumer, FanOutProducer} from '../../src/fanning';
+import {FanInProducer, FanInConsumer, FanOutProducer} from '../src/fanning';
 import {Pipeline} from '../src/index';
 
 class First extends FanOutProducer {
@@ -35,9 +36,9 @@ class Second extends FanInProducer {
   }
 
   handleMessage(message, task, done) {
-    this.finishMessage(message, task, 'fanned_in', {
-      n: message.json().n
-    }, done);
+    const n = message.json().n;
+    this.pipeline.log('debug', 'Handling fanned out message', n);
+    this.finishMessage(message, task, 'fanned_in', {n}, done);
   }
 }
 
@@ -50,7 +51,7 @@ export default class Third extends FanInConsumer {
 
   handleMessage(message, task, messages, done) {
     this.pipeline.log('debug', 'Fanned in messages', messages);
-    callback();
+    done();
   }
 }
 
@@ -78,9 +79,11 @@ if (command === 'start') {
     if (err) {
       throw(err);
     } else {
-      console.log('Fan out pipeline started...');
+      pipeline.log('debug', 'fan out pipeline started...');
     }
   });
 } else if (command === 'publish') {
-  pipeline.publish('fan_out', {foo: 'bar'}, console.log);
+  pipeline.publish('fan_out', {foo: 'bar'}, (...args) => {
+    pipeline.log('debug', 'published message', ...args);
+  });
 }
