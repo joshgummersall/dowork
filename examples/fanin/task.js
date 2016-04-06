@@ -12,6 +12,10 @@ class Task {
     this.redis = redis.createClient();
   }
 
+  computeDelayMs() {
+    return this.pollDelay * 1000;
+  }
+
   validKey() {
     return `${this.tKey}:v`;
   }

@@ -52,7 +52,7 @@ export default class FanInConsumer extends Worker {
     } else {
       setTimeout(() => {
         this.pipeline.publish(this.topic, toPublish, callback);
-      }, task.pollDelay * 1000);
+      }, task.computeDelayMs());
     }
   }
 
