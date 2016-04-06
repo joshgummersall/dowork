@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import redis from 'redis';
 import uuid from 'uuid';
 
-class Task {
+export default class Task {
   constructor(options = {}) {
     this.tKey = options.tKey || uuid.v1();
     this.eCount = options.eCount;
@@ -70,5 +70,3 @@ class Task {
     });
   }
 }
-
-export default Task;

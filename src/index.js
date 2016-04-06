@@ -1,3 +1,3 @@
-import Worker from './worker'
-import Pipeline from './pipeline'
-export {Worker, Pipeline}
+import Worker from './worker';
+import Pipeline from './pipeline';
+export {Worker, Pipeline};
