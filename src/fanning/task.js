@@ -30,6 +30,20 @@ export default class Task {
     });
   }
 
+  doneKey() {
+    return `${this.tKey}:c`;
+  }
+
+  isDone(callback) {
+    this.redis.get(this.doneKey(), (err, value) => {
+      callback(err, parseInt(value, 10) === 1);
+    });
+  }
+
+  markDone(callback) {
+    this.redis.set(this.doneKey(), 1, callback);
+  }
+
   messagesKey() {
     return `${this.tKey}:m`;
   }
