@@ -1,5 +1,5 @@
-import Task from './task'
-import Worker from '../worker'
+import Task from './task';
+import Worker from '../worker';
 import async from 'async';
 
 export default class FanInConsumer extends Worker {
