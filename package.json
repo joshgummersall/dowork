@@ -4,9 +4,9 @@
   "description": "An NSQJS framework for data processing in Node.js.",
   "main": "src/index.js",
   "scripts": {
-    "build": "node_modules/.bin/babel src/ -d lib/",
+    "compile": "node_modules/.bin/babel src/ -d lib/",
     "test": "node_modules/.bin/mocha --compilers js:babel-register test/*_test.js",
-    "prepublish": "npm run build"
+    "prepublish": "npm run compile"
   },
   "keywords": [
     "nsq",
