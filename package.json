@@ -14,14 +14,14 @@
     "data",
     "pipeline"
   ],
-  "homepage": "https://gitlab.com/joshgummersall/dowork",
+  "homepage": "https://github.com/joshgummersall/dowork",
   "bugs": {
-    "url": "https://gitlab.com/joshgummersall/dowork/issues",
+    "url": "https://github.com/joshgummersall/dowork/issues",
     "email": "josh@joshgummersall.me"
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/joshgummersall/dowork.git"
+    "url": "https://github.com/joshgummersall/dowork.git"
   },
   "author": {
     "name": "Josh Gummersall",
